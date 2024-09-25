@@ -8,4 +8,4 @@ Enable damage inflictors for friendly fire
 
 # Config
 
-> Mode details soon
+> More details soon
