@@ -69,10 +69,10 @@ namespace AdvancedFriendlyFire
                     return HookResult.Continue;
                 }
 
-                return HookResult.Handled; // Prevent damage if the inflictor is not allowed
+                return HookResult.Handled; 
             }
 
-            return HookResult.Continue; // Allow the damage
+            return HookResult.Continue; 
         }
     }
 }
