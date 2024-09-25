@@ -11,4 +11,16 @@
 
 # Config
 
-> More details soon
+```json
+{
+  "Enable/Disable Advanced Friendly Fire": true,
+  "Damage Inflictors": [
+    "inferno",
+    "hegrenade_projectile",
+    "flashbang_projectile",
+    "smokegrenade_projectile",
+    "decoy_projectile",
+    "planted_c4"
+  ],
+  "ConfigVersion": 1
+}
