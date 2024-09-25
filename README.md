@@ -2,7 +2,7 @@
 Enable damage inflictors for friendly fire
 
 # Req
-> CounterStrikeSharp(https://docs.cssharp.dev/) installed.
+> [CounterStrikeSharp](https://docs.cssharp.dev/) installed.
 
 > mp_friendlyfire 1
 
