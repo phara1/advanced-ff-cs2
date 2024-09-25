@@ -7,7 +7,7 @@
 
 ![image](https://github.com/user-attachments/assets/fbd0632d-283a-4204-a763-89bb927e4624)
 
-# Req
+# Requirements
 > [CounterStrikeSharp](https://docs.cssharp.dev/) installed.
 
 > mp_friendlyfire 1
