@@ -31,4 +31,4 @@
 - A list of Damage Inflictors can be found here: [Entity List](https://cs2.poggu.me/dumped-data/entity-list/)
 
 # Credits
-- Original plugin author - https://github.com/hoan111
+- Idea taken from the original plugin author - https://github.com/hoan111
