@@ -94,8 +94,13 @@ namespace AdvancedFriendlyFire
             var attacker = eventInfo.Attacker;
             var victim = eventInfo.Userid;
 
+            if (attacker != null && victim != null)
+                return HookResult.Continue;
+
+
             ulong attackerSteamId = eventInfo.Attacker.SteamID;
-            if (attacker != null && victim != null && attacker != victim)
+
+            if (attacker != victim)
             {
                 var damageTaken = eventInfo.DmgHealth;
 
