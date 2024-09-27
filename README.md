@@ -11,6 +11,7 @@
 
 # Requirements
 > [CounterStrikeSharp](https://docs.cssharp.dev/) installed.
+
 > mp_friendlyfire 1
 
 # Features
@@ -32,6 +33,10 @@
 - - - Use {Player} as a placeholder in the command for the player name.
 - Persistent Damage Tracking
 - - Player inflicted team damage is stored even if they disconnect and reconnect to the server, making them unable to avoid warnings.
+
+# Installation
+- Download the [latest release](https://github.com/phara1/advanced-ff-cs2/releases)
+- Paste the ```advanced_friendlyfire``` folder inside your plugins folder
 
 # Config
 ```json
