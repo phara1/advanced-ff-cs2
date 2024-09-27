@@ -6,6 +6,8 @@
 - If you have any ideas for this project, I'm more than happy to hear your request.
 
 ![image](https://github.com/user-attachments/assets/fbd0632d-283a-4204-a763-89bb927e4624)
+> [!WARNING]
+> As with the latest update, [Advanced Friendly Fire v1.1], which introduces the punishment features, has only been minimally tested (primarily with bots), and the code is a total mess, but will be fixed soon. Please report any bugs you encounter in the [issues](https://github.com/phara1/advanced-ff-cs2/issues) section
 
 # Requirements
 > [CounterStrikeSharp](https://docs.cssharp.dev/) installed.
