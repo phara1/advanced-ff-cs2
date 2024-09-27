@@ -31,7 +31,7 @@
 - - Apply a server command (e.g., css_slay) to the player.
 - - - Use {Player} as a placeholder in the command for the player name.
 - Persistent Damage Tracking
-- - Player inflicted team damage is stored even if they disconnect and reconnect to the server, making them unable.
+- - Player inflicted team damage is stored even if they disconnect and reconnect to the server, making them unable to avoid warnings.
 
 # Config
 ```json
