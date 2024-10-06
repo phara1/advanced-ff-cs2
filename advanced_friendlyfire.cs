@@ -62,7 +62,7 @@ namespace AdvancedFriendlyFire
     public class AdvancedFriendlyFire : BasePlugin, IPluginConfig<AdvancedFriendlyFireConfig>
     {
         public override string ModuleName => "Advanced Friendly Fire [Extracted from Argentum Suite]";
-        public override string ModuleVersion => "1.1";
+        public override string ModuleVersion => "1.1.2";
         public override string ModuleAuthor => "phara1";
         public override string ModuleDescription => "https://steamcommunity.com/id/kenoxyd";
 
@@ -77,7 +77,6 @@ namespace AdvancedFriendlyFire
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnAdvancedFriendlyFireHook, HookMode.Pre);
 
             RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
-            //RegisterConsoleCommandAttributeHandlers(OnClearDMG);
         }
 
         public override void Unload(bool hotReload)
@@ -91,27 +90,38 @@ namespace AdvancedFriendlyFire
 
         private HookResult OnPlayerHurt(EventPlayerHurt eventInfo, GameEventInfo info)
         {
-            var attacker = eventInfo.Attacker;
-            var victim = eventInfo.Userid;
-
-            if (attacker != null && victim != null)
-                return HookResult.Continue;
-
-
-            ulong attackerSteamId = eventInfo.Attacker.SteamID;
-
-            if (attacker != victim)
+            if (eventInfo == null)
             {
-                var damageTaken = eventInfo.DmgHealth;
-
-                string attackerName = eventInfo.Attacker.PlayerName;
-
-                tempDamageTracker[attackerSteamId] = (damageTaken, attackerName);
-
+                Console.WriteLine("eventInfo is null, skipping...");
+                return HookResult.Continue;
             }
+
+            var attacker = eventInfo?.Attacker;
+            var victim = eventInfo?.Userid;
+
+            if (attacker == null && victim == null)
+            {
+                return HookResult.Continue;
+            }
+
+            if (attacker != null)
+            {
+                ulong attackerSteamId = attacker.SteamID;
+
+                if (attacker != victim)
+                {
+                    var damageTaken = eventInfo.DmgHealth;
+
+                    string attackerName = attacker.PlayerName;  // Safe to access after null check
+
+                    tempDamageTracker[attackerSteamId] = (damageTaken, attackerName);
+                }
+            }
+
 
             return HookResult.Continue;
         }
+
 
         private HookResult OnAdvancedFriendlyFireHook(DynamicHook hook)
         {
@@ -119,6 +129,8 @@ namespace AdvancedFriendlyFire
 
             var victim = hook.GetParam<CEntityInstance>(0);
             var idmg = hook.GetParam<CTakeDamageInfo>(1);
+
+            
 
             if (victim.DesignerName != "player") return HookResult.Continue;
 
@@ -196,21 +208,6 @@ namespace AdvancedFriendlyFire
             }
             return HookResult.Handled;
         }
-
-        //[ConsoleCommand("css_cleardmg")]
-        //public void OnClearDMG(CCSPlayerController? controller, CommandInfo command)
-        //{
-        //    if (controller == null) return;
-
-        //    ClearDictionaries();
-        //    Server.PrintToChatAll("Damage cleared");
-        //}
-        //private void ClearDictionaries()
-        //{
-        //    tempDamageTracker.Clear();
-        //    teamDamageTracker.Clear();
-        //    punishmentLevelTracker.Clear();
-        //}
 
     }
 }
