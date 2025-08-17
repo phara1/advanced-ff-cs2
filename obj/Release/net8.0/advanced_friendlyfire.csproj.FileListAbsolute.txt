@@ -1,0 +1,13 @@
+C:\Users\fadel\Documents\advanced-ff-cs2\bin\Release\net8.0\advanced_friendlyfire.deps.json
+C:\Users\fadel\Documents\advanced-ff-cs2\bin\Release\net8.0\advanced_friendlyfire.dll
+C:\Users\fadel\Documents\advanced-ff-cs2\bin\Release\net8.0\advanced_friendlyfire.pdb
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.csproj.AssemblyReference.cache
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.AssemblyInfoInputs.cache
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.AssemblyInfo.cs
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.csproj.CoreCompileInputs.cache
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.sourcelink.json
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.dll
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\refint\advanced_friendlyfire.dll
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\advanced_friendlyfire.pdb
+C:\Users\fadel\Documents\advanced-ff-cs2\obj\Release\net8.0\ref\advanced_friendlyfire.dll
