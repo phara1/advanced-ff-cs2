@@ -143,10 +143,13 @@ namespace AdvancedFriendlyFire
             
 
             if (victim.DesignerName != "player") return HookResult.Continue;
+            if (idmg.Attacker?.Value == null) return HookResult.Continue;
+
+            var attackerController = new CCSPlayerController(idmg.Attacker.Value.Handle);
+            if (attackerController == null) return HookResult.Continue;
 
             var attacker = new CCSPlayerPawn(idmg.Attacker.Value.Handle);
             var victimPlayer = new CCSPlayerController(victim.Handle);
-            var attackerController = new CCSPlayerController(idmg.Attacker.Value.Handle);
 
             if (attacker.TeamNum != victimPlayer.TeamNum || attacker == victimPlayer) return HookResult.Continue;
 
