@@ -81,7 +81,7 @@ namespace AdvancedFriendlyFire
             if (Config.IsAdvancedFriendlyFireEnabled)
             {
                 Server.ExecuteCommand("mp_friendlyfire 1");
-                Server.ExecuteCommand("ff_damage_reduction_bullets 0.33");
+                Server.ExecuteCommand("ff_damage_reduction_bullets 0.0");
                 Server.ExecuteCommand("ff_damage_reduction_grenade 0.85");
                 Server.ExecuteCommand("ff_damage_reduction_grenade_self 1");
                 Server.ExecuteCommand("ff_damage_reduction_other 0.4");
@@ -222,3 +222,4 @@ namespace AdvancedFriendlyFire
 
     }
 }
+
