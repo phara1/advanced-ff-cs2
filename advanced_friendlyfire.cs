@@ -76,8 +76,6 @@ namespace AdvancedFriendlyFire
         {
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnAdvancedFriendlyFireHook, HookMode.Pre);
 
-            RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
-
             if (Config.IsAdvancedFriendlyFireEnabled)
             {
                 Server.ExecuteCommand("mp_friendlyfire 1");
@@ -94,43 +92,8 @@ namespace AdvancedFriendlyFire
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnAdvancedFriendlyFireHook, HookMode.Pre);
         }
 
-        private Dictionary<ulong, (float damage, string attackerName)> tempDamageTracker = new Dictionary<ulong, (float, string)>();
         private Dictionary<ulong, float> teamDamageTracker = new Dictionary<ulong, float>();
         private Dictionary<ulong, int> punishmentLevelTracker = new Dictionary<ulong, int>();
-
-        private HookResult OnPlayerHurt(EventPlayerHurt eventInfo, GameEventInfo info)
-        {
-            if (eventInfo == null)
-            {
-                Console.WriteLine("eventInfo is null, skipping...");
-                return HookResult.Continue;
-            }
-
-            var attacker = eventInfo?.Attacker;
-            var victim = eventInfo?.Userid;
-
-            if (attacker == null && victim == null)
-            {
-                return HookResult.Continue;
-            }
-
-            if (attacker != null)
-            {
-                ulong attackerSteamId = attacker.SteamID;
-
-                if (attacker != victim)
-                {
-                    var damageTaken = eventInfo.DmgHealth;
-
-                    string attackerName = attacker.PlayerName;  // Safe to access after null check
-
-                    tempDamageTracker[attackerSteamId] = (damageTaken, attackerName);
-                }
-            }
-
-
-            return HookResult.Continue;
-        }
 
 
         private HookResult OnAdvancedFriendlyFireHook(DynamicHook hook)
@@ -162,13 +125,8 @@ namespace AdvancedFriendlyFire
                 if (Config.ArePunishmentsEnabled)
                 {
                     ulong attackerSteamId = attacker.Controller.Value.SteamID;
-
-                    if (!tempDamageTracker.TryGetValue(attackerSteamId, out var attackerInfo))
-                    {
-                        attackerInfo = (0, "Unknown");
-                    }
-                    float damageAmount = attackerInfo.damage;
-                    string attackerName = attackerInfo.attackerName;
+                    float damageAmount = idmg.Damage;
+                    string attackerName = attackerController.PlayerName;
 
                     if (!teamDamageTracker.TryGetValue(attackerSteamId, out float totalDamage))
                         totalDamage = 0;
