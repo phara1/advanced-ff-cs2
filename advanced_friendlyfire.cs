@@ -20,6 +20,9 @@ namespace AdvancedFriendlyFire
         [JsonPropertyName("Enable/Disable Punishments")]
         public bool ArePunishmentsEnabled { get; set; } = true;
 
+        [JsonPropertyName("Bullet damage reduction")]
+        public float BulletDamageReduction { get; set; } = 0f;
+
         [JsonPropertyName("Damage Inflictors")]
         public string[] DamageInflictors { get; set; } =
         {
@@ -79,7 +82,7 @@ namespace AdvancedFriendlyFire
             if (Config.IsAdvancedFriendlyFireEnabled)
             {
                 Server.ExecuteCommand("mp_friendlyfire 1");
-                Server.ExecuteCommand("ff_damage_reduction_bullets 0.33");
+                Server.ExecuteCommand($"ff_damage_reduction_bullets {Config.BulletDamageReduction}");
                 Server.ExecuteCommand("ff_damage_reduction_grenade 0.85");
                 Server.ExecuteCommand("ff_damage_reduction_grenade_self 1");
                 Server.ExecuteCommand("ff_damage_reduction_other 0.4");
