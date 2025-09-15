@@ -1,0 +1,104 @@
+name: Manual Build and Release (DLL only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag de la release, ex: v1.0.0"
+        required: true
+        type: string
+      release_title:
+        description: "Titre de la release, ex: AdvancedFriendlyFire v1.0.0"
+        required: true
+        type: string
+      include_symbols:
+        description: "Joindre aussi le PDB si disponible"
+        required: false
+        default: false
+        type: boolean
+      include_zip:
+        description: "Joindre un ZIP minimal"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore "./advanced_friendlyfire.csproj"
+
+      - name: Build Release to fixed output
+        run: dotnet build "./advanced_friendlyfire.csproj" -c Release -p:OutputPath=out --no-restore
+
+      - name: Collect only plugin artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT_DIR="out"
+          COLLECT_DIR="collect"
+          mkdir -p "$COLLECT_DIR"
+
+          echo "Contenu de $OUT_DIR:"
+          ls -la "$OUT_DIR" || true
+
+          PROJECT_CSProj="advanced_friendlyfire.csproj"
+          PROJECT_NAME="${PROJECT_CSProj%.csproj}"
+          DLL_WANTED="${PROJECT_NAME}.dll"
+
+          if [ ! -f "$OUT_DIR/$DLL_WANTED" ]; then
+            echo "::error::DLL attendue introuvable: $OUT_DIR/$DLL_WANTED"
+            echo "Liste des DLL dans $OUT_DIR:"
+            find "$OUT_DIR" -maxdepth 1 -name "*.dll" -print || true
+            exit 1
+          fi
+
+          cp "$OUT_DIR/$DLL_WANTED" "$COLLECT_DIR/"
+
+          if [ "${{ inputs.include_symbols }}" = "true" ] && [ -f "$OUT_DIR/${PROJECT_NAME}.pdb" ]; then
+            cp "$OUT_DIR/${PROJECT_NAME}.pdb" "$COLLECT_DIR/"
+          fi
+
+          if [ -f "README.md" ]; then cp README.md "$COLLECT_DIR/"; fi
+          if [ -f "addons/counterstrikesharp/configs/advanced_friendlyfire.json" ]; then
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs"
+            cp addons/counterstrikesharp/configs/advanced_friendlyfire.json "$COLLECT_DIR/addons/counterstrikesharp/configs/"
+          fi
+
+          echo "Contenu collecté:"
+          ls -la "$COLLECT_DIR"
+
+      - name: Create minimal ZIP
+        if: ${{ inputs.include_zip == true }}
+        run: |
+          cd collect
+          zip -r advanced_friendlyfire-${{ inputs.tag_name }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.release_title }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            collect/advanced_friendlyfire.dll
+            collect/advanced_friendlyfire.pdb
+            collect/README.md
+            collect/addons/counterstrikesharp/configs/advanced_friendlyfire.json
+            collect/advanced_friendlyfire-${{ inputs.tag_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
