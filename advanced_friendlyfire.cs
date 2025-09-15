@@ -152,71 +152,72 @@ namespace AdvancedFriendlyFire
 
             string inflictor = idmg.Inflictor.Value?.DesignerName ?? "";
 
-            if (Config.DamageInflictors.Contains(inflictor))
+            if (!Config.DamageInflictors.Contains(inflictor))
             {
-                attackerController.PrintToCenterAlert("DON'T HURT YOUR TEAMMATES!");
-
-                if (Config.ArePunishmentsEnabled)
-                {
-                    ulong attackerSteamId = attacker.Controller.Value.SteamID;
-
-                    if (!tempDamageTracker.TryGetValue(attackerSteamId, out var attackerInfo))
-                    {
-                        attackerInfo = (0, "Unknown");
-                    }
-                    float damageAmount = attackerInfo.damage;
-                    string attackerName = attackerInfo.attackerName;
-
-                    if (!teamDamageTracker.TryGetValue(attackerSteamId, out float totalDamage))
-                        totalDamage = 0;
-
-                    totalDamage += damageAmount;
-                    teamDamageTracker[attackerSteamId] = totalDamage;
-
-                    //Server.PrintToChatAll($"Total damage: {teamDamageTracker[attackerSteamId]}");
-
-                    if (!punishmentLevelTracker.TryGetValue(attackerSteamId, out int punishmentLevel))
-                        punishmentLevel = 0;
-
-                    if (totalDamage >= Config.Warn1 && punishmentLevel < 1)
-                    {
-                        attackerController.PrintToChat($"{Config.chatWarn1}");
-
-                        string commandToExecute = Config.punishWarn1;
-
-                        if (commandToExecute.Contains("{Player}"))
-                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                        punishmentLevelTracker[attackerSteamId] = 1;
-                    }
-                    else if (totalDamage >= Config.Warn2 && punishmentLevel < 2)
-                    {
-                        attackerController.PrintToChat($"{Config.chatWarn2}");
-
-                        string commandToExecute = Config.punishWarn2;
-
-                        if (commandToExecute.Contains("{Player}"))
-                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                        punishmentLevelTracker[attackerSteamId] = 2;
-                    }
-                    else if (totalDamage >= Config.Warn3 && punishmentLevel < 3)
-                    {
-                        attackerController.PrintToChat($"{Config.chatWarn3}");
-
-                        string commandToExecute = Config.punishWarn3;
-
-                        if (commandToExecute.Contains("{Player}"))
-                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                        teamDamageTracker[attackerSteamId] = 0;
-                        punishmentLevelTracker[attackerSteamId] = 0;
-                    }
-                }
-
                 return HookResult.Continue;
             }
-            return HookResult.Handled;
+
+            attackerController.PrintToCenterAlert("DON'T HURT YOUR TEAMMATES!");
+
+            if (Config.ArePunishmentsEnabled)
+            {
+                ulong attackerSteamId = attacker.Controller.Value.SteamID;
+
+                if (!tempDamageTracker.TryGetValue(attackerSteamId, out var attackerInfo))
+                {
+                    attackerInfo = (0, "Unknown");
+                }
+                float damageAmount = attackerInfo.damage;
+                string attackerName = attackerInfo.attackerName;
+
+                if (!teamDamageTracker.TryGetValue(attackerSteamId, out float totalDamage))
+                    totalDamage = 0;
+
+                totalDamage += damageAmount;
+                teamDamageTracker[attackerSteamId] = totalDamage;
+
+                //Server.PrintToChatAll($"Total damage: {teamDamageTracker[attackerSteamId]}");
+
+                if (!punishmentLevelTracker.TryGetValue(attackerSteamId, out int punishmentLevel))
+                    punishmentLevel = 0;
+
+                if (totalDamage >= Config.Warn1 && punishmentLevel < 1)
+                {
+                    attackerController.PrintToChat($"{Config.chatWarn1}");
+
+                    string commandToExecute = Config.punishWarn1;
+
+                    if (commandToExecute.Contains("{Player}"))
+                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                    punishmentLevelTracker[attackerSteamId] = 1;
+                }
+                else if (totalDamage >= Config.Warn2 && punishmentLevel < 2)
+                {
+                    attackerController.PrintToChat($"{Config.chatWarn2}");
+
+                    string commandToExecute = Config.punishWarn2;
+
+                    if (commandToExecute.Contains("{Player}"))
+                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                    punishmentLevelTracker[attackerSteamId] = 2;
+                }
+                else if (totalDamage >= Config.Warn3 && punishmentLevel < 3)
+                {
+                    attackerController.PrintToChat($"{Config.chatWarn3}");
+
+                    string commandToExecute = Config.punishWarn3;
+
+                    if (commandToExecute.Contains("{Player}"))
+                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                    teamDamageTracker[attackerSteamId] = 0;
+                    punishmentLevelTracker[attackerSteamId] = 0;
+                }
+            }
+
+            return HookResult.Continue;
         }
 
     }
