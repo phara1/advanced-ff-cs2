@@ -20,9 +20,6 @@ namespace AdvancedFriendlyFire
         [JsonPropertyName("Enable/Disable Punishments")]
         public bool ArePunishmentsEnabled { get; set; } = true;
 
-        [JsonPropertyName("Bullet damage reduction")]
-        public float BulletDamageReduction { get; set; } = 0;
-
         [JsonPropertyName("Damage Inflictors")]
         public string[] DamageInflictors { get; set; } =
         {
@@ -79,10 +76,12 @@ namespace AdvancedFriendlyFire
         {
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnAdvancedFriendlyFireHook, HookMode.Pre);
 
+            RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
+
             if (Config.IsAdvancedFriendlyFireEnabled)
             {
                 Server.ExecuteCommand("mp_friendlyfire 1");
-                Server.ExecuteCommand("ff_damage_reduction_bullets 0");
+                Server.ExecuteCommand("ff_damage_reduction_bullets 0.33");
                 Server.ExecuteCommand("ff_damage_reduction_grenade 0.85");
                 Server.ExecuteCommand("ff_damage_reduction_grenade_self 1");
                 Server.ExecuteCommand("ff_damage_reduction_other 0.4");
@@ -95,8 +94,43 @@ namespace AdvancedFriendlyFire
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnAdvancedFriendlyFireHook, HookMode.Pre);
         }
 
+        private Dictionary<ulong, (float damage, string attackerName)> tempDamageTracker = new Dictionary<ulong, (float, string)>();
         private Dictionary<ulong, float> teamDamageTracker = new Dictionary<ulong, float>();
         private Dictionary<ulong, int> punishmentLevelTracker = new Dictionary<ulong, int>();
+
+        private HookResult OnPlayerHurt(EventPlayerHurt eventInfo, GameEventInfo info)
+        {
+            if (eventInfo == null)
+            {
+                Console.WriteLine("eventInfo is null, skipping...");
+                return HookResult.Continue;
+            }
+
+            var attacker = eventInfo?.Attacker;
+            var victim = eventInfo?.Userid;
+
+            if (attacker == null && victim == null)
+            {
+                return HookResult.Continue;
+            }
+
+            if (attacker != null)
+            {
+                ulong attackerSteamId = attacker.SteamID;
+
+                if (attacker != victim)
+                {
+                    var damageTaken = eventInfo.DmgHealth;
+
+                    string attackerName = attacker.PlayerName;  // Safe to access after null check
+
+                    tempDamageTracker[attackerSteamId] = (damageTaken, attackerName);
+                }
+            }
+
+
+            return HookResult.Continue;
+        }
 
 
         private HookResult OnAdvancedFriendlyFireHook(DynamicHook hook)
@@ -109,82 +143,81 @@ namespace AdvancedFriendlyFire
             
 
             if (victim.DesignerName != "player") return HookResult.Continue;
-            if (idmg.Attacker?.Value == null) return HookResult.Continue;
-
-            var attackerController = new CCSPlayerController(idmg.Attacker.Value.Handle);
-            if (attackerController == null) return HookResult.Continue;
 
             var attacker = new CCSPlayerPawn(idmg.Attacker.Value.Handle);
             var victimPlayer = new CCSPlayerController(victim.Handle);
+            var attackerController = new CCSPlayerController(idmg.Attacker.Value.Handle);
 
-            if (attacker.TeamNum != victimPlayer.TeamNum || attackerController.SteamID == victimPlayer.SteamID) return HookResult.Continue;
+            if (attacker.TeamNum != victimPlayer.TeamNum || attacker == victimPlayer) return HookResult.Continue;
 
             string inflictor = idmg.Inflictor.Value?.DesignerName ?? "";
 
-            if (!Config.DamageInflictors.Contains(inflictor))
+            if (Config.DamageInflictors.Contains(inflictor))
             {
-                idmg.Damage = 0;
-                return HookResult.Stop;
+                attackerController.PrintToCenterAlert("DON'T HURT YOUR TEAMMATES!");
+
+                if (Config.ArePunishmentsEnabled)
+                {
+                    ulong attackerSteamId = attacker.Controller.Value.SteamID;
+
+                    if (!tempDamageTracker.TryGetValue(attackerSteamId, out var attackerInfo))
+                    {
+                        attackerInfo = (0, "Unknown");
+                    }
+                    float damageAmount = attackerInfo.damage;
+                    string attackerName = attackerInfo.attackerName;
+
+                    if (!teamDamageTracker.TryGetValue(attackerSteamId, out float totalDamage))
+                        totalDamage = 0;
+
+                    totalDamage += damageAmount;
+                    teamDamageTracker[attackerSteamId] = totalDamage;
+
+                    //Server.PrintToChatAll($"Total damage: {teamDamageTracker[attackerSteamId]}");
+
+                    if (!punishmentLevelTracker.TryGetValue(attackerSteamId, out int punishmentLevel))
+                        punishmentLevel = 0;
+
+                    if (totalDamage >= Config.Warn1 && punishmentLevel < 1)
+                    {
+                        attackerController.PrintToChat($"{Config.chatWarn1}");
+
+                        string commandToExecute = Config.punishWarn1;
+
+                        if (commandToExecute.Contains("{Player}"))
+                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                        punishmentLevelTracker[attackerSteamId] = 1;
+                    }
+                    else if (totalDamage >= Config.Warn2 && punishmentLevel < 2)
+                    {
+                        attackerController.PrintToChat($"{Config.chatWarn2}");
+
+                        string commandToExecute = Config.punishWarn2;
+
+                        if (commandToExecute.Contains("{Player}"))
+                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                        punishmentLevelTracker[attackerSteamId] = 2;
+                    }
+                    else if (totalDamage >= Config.Warn3 && punishmentLevel < 3)
+                    {
+                        attackerController.PrintToChat($"{Config.chatWarn3}");
+
+                        string commandToExecute = Config.punishWarn3;
+
+                        if (commandToExecute.Contains("{Player}"))
+                            Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
+
+                        teamDamageTracker[attackerSteamId] = 0;
+                        punishmentLevelTracker[attackerSteamId] = 0;
+                    }
+                }
+
+                return HookResult.Continue;
             }
-
-            attackerController.PrintToCenterAlert("DON'T HURT YOUR TEAMMATES!");
-
-            if (Config.ArePunishmentsEnabled)
-            {
-                ulong attackerSteamId = attacker.Controller.Value.SteamID;
-                float damageAmount = idmg.Damage;
-                string attackerName = attackerController.PlayerName;
-
-                if (!teamDamageTracker.TryGetValue(attackerSteamId, out float totalDamage))
-                    totalDamage = 0;
-
-                totalDamage += damageAmount;
-                teamDamageTracker[attackerSteamId] = totalDamage;
-
-                //Server.PrintToChatAll($"Total damage: {teamDamageTracker[attackerSteamId]}");
-
-                if (!punishmentLevelTracker.TryGetValue(attackerSteamId, out int punishmentLevel))
-                    punishmentLevel = 0;
-
-                if (totalDamage >= Config.Warn1 && punishmentLevel < 1)
-                {
-                    attackerController.PrintToChat($"{Config.chatWarn1}");
-
-                    string commandToExecute = Config.punishWarn1;
-
-                    if (commandToExecute.Contains("{Player}"))
-                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                    punishmentLevelTracker[attackerSteamId] = 1;
-                }
-                else if (totalDamage >= Config.Warn2 && punishmentLevel < 2)
-                {
-                    attackerController.PrintToChat($"{Config.chatWarn2}");
-
-                    string commandToExecute = Config.punishWarn2;
-
-                    if (commandToExecute.Contains("{Player}"))
-                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                    punishmentLevelTracker[attackerSteamId] = 2;
-                }
-                else if (totalDamage >= Config.Warn3 && punishmentLevel < 3)
-                {
-                    attackerController.PrintToChat($"{Config.chatWarn3}");
-
-                    string commandToExecute = Config.punishWarn3;
-
-                    if (commandToExecute.Contains("{Player}"))
-                        Server.ExecuteCommand(commandToExecute.Replace("{Player}", attackerName));
-
-                    teamDamageTracker[attackerSteamId] = 0;
-                    punishmentLevelTracker[attackerSteamId] = 0;
-                }
-            }
-
-            return HookResult.Continue;
+            return HookResult.Handled;
         }
 
     }
 }
-
