@@ -151,7 +151,7 @@ namespace AdvancedFriendlyFire
             var attacker = new CCSPlayerPawn(idmg.Attacker.Value.Handle);
             var victimPlayer = new CCSPlayerController(victim.Handle);
 
-            if (attacker.TeamNum != victimPlayer.TeamNum || attacker == victimPlayer) return HookResult.Continue;
+            if (attacker.TeamNum != victimPlayer.TeamNum || attackerController.SteamID == victimPlayer.SteamID) return HookResult.Continue;
 
             string inflictor = idmg.Inflictor.Value?.DesignerName ?? "";
 
