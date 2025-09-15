@@ -67,14 +67,25 @@ jobs:
 
           cp "$OUT_DIR/$DLL_WANTED" "$COLLECT_DIR/"
 
+          PLUGIN_COLLECT_DIR="$COLLECT_DIR/addons/counterstrikesharp/plugins/$PROJECT_NAME"
+          mkdir -p "$PLUGIN_COLLECT_DIR"
+          cp "$OUT_DIR/$DLL_WANTED" "$PLUGIN_COLLECT_DIR/"
+
           if [ "${{ inputs.include_symbols }}" = "true" ] && [ -f "$OUT_DIR/${PROJECT_NAME}.pdb" ]; then
             cp "$OUT_DIR/${PROJECT_NAME}.pdb" "$COLLECT_DIR/"
           fi
 
           if [ -f "README.md" ]; then cp README.md "$COLLECT_DIR/"; fi
-          if [ -f "addons/counterstrikesharp/configs/advanced_friendlyfire.json" ]; then
+          CONFIG_LEGACY_FILE="addons/counterstrikesharp/configs/${PROJECT_NAME}.json"
+          CONFIG_PLUGIN_DIR="addons/counterstrikesharp/configs/plugins/${PROJECT_NAME}"
+          if [ -d "$CONFIG_PLUGIN_DIR" ]; then
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins"
+            cp -r "$CONFIG_PLUGIN_DIR" "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/"
+          elif [ -f "$CONFIG_LEGACY_FILE" ]; then
             mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs"
-            cp addons/counterstrikesharp/configs/advanced_friendlyfire.json "$COLLECT_DIR/addons/counterstrikesharp/configs/"
+            cp "$CONFIG_LEGACY_FILE" "$COLLECT_DIR/addons/counterstrikesharp/configs/"
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/$PROJECT_NAME"
+            cp "$CONFIG_LEGACY_FILE" "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/$PROJECT_NAME/"
           fi
 
           echo "Contenu collecté:"
