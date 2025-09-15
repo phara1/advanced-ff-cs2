@@ -219,7 +219,7 @@ namespace AdvancedFriendlyFire
 
                 return HookResult.Continue;
             }
-            return HookResult.Handled;
+            return HookResult.Continue;
         }
 
     }
