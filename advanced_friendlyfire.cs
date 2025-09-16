@@ -21,6 +21,9 @@ namespace AdvancedFriendlyFire
         [JsonPropertyName("Enforce Only Configured Damage Inflictors")]
         public bool EnforceDamageSources { get; set; } = true;
 
+        [JsonPropertyName("Punishment Delay (Seconds)")]
+        public int PunishmentDelay { get; set; } = 2;
+
         [JsonPropertyName("Damage Inflictors")]
         public string[] DamageInflictors { get; set; } =
         {
@@ -58,21 +61,20 @@ namespace AdvancedFriendlyFire
     {
         public override string ModuleName => "Advanced Friendly Fire";
         public override string ModuleVersion => "1.1.5";
-        public override string ModuleAuthor => "phara1 (Optimized by ChatGPT)";
+        public override string ModuleAuthor => "keno";
         public override string ModuleDescription => "https://steamcommunity.com/id/kenoxyd";
 
         public required AdvancedFriendlyFireConfig Config { get; set; }
         public void OnConfigParsed(AdvancedFriendlyFireConfig config) => Config = config;
 
         private readonly Dictionary<ulong, (float Damage, int Level)> playerStats = new();
-        private readonly Dictionary<ulong, float> playerHealth = new();
+
         private readonly string PREFIX = " \x04 AdvancedFF » \x01";
 
         public override void Load(bool hotReload)
         {
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnFriendlyFireHook, HookMode.Pre);
             RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
-            RegisterEventHandler<EventPlayerSpawn>(OnPlayerSpawn);
 
             if (Config.IsEnabled)
             {
@@ -95,27 +97,40 @@ namespace AdvancedFriendlyFire
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnFriendlyFireHook, HookMode.Pre);
         }
 
-        private HookResult OnPlayerSpawn(EventPlayerSpawn e, GameEventInfo info)
-        {
-            var player = e.Userid;
-            if (player != null)
-                playerHealth[player.SteamID] = player.Health;
-
-            return HookResult.Continue;
-        }
-
         private HookResult OnPlayerHurt(EventPlayerHurt e, GameEventInfo info)
         {
-            if (e?.Attacker == null || e.Userid == null || e.Attacker == e.Userid)
+            if (!Config.IsEnabled || e?.Attacker == null || e.Userid == null || e.Attacker == e.Userid)
+                return HookResult.Continue;
+
+            if (e.Attacker.TeamNum != e.Userid.TeamNum)
                 return HookResult.Continue;
 
             ulong attackerId = e.Attacker.SteamID;
-            float damage = e.DmgHealth;
+            string attackerName = e.Attacker.PlayerName ?? $"SteamID:{attackerId}";
+            float damageTaken = e.DmgHealth;
 
             if (!playerStats.TryGetValue(attackerId, out var stats))
-                stats = (0, 0);
+                stats = (0f, 0);
 
-            playerStats[attackerId] = (stats.Damage + damage, stats.Level);
+            float newDamage = stats.Damage + damageTaken;
+            int level = stats.Level;
+
+            if (Config.PunishmentsEnabled)
+            {
+                if (newDamage >= Config.Warning3Threshold && level < 3)
+                    ApplyPunishment(e.Attacker, attackerName, Config.Warning3Message, Config.Warning3Punishment, attackerId, 3, reset: true);
+                else if (newDamage >= Config.Warning2Threshold && level < 2)
+                    ApplyPunishment(e.Attacker, attackerName, Config.Warning2Message, Config.Warning2Punishment, attackerId, 2);
+                else if (newDamage >= Config.Warning1Threshold && level < 1)
+                    ApplyPunishment(e.Attacker, attackerName, Config.Warning1Message, Config.Warning1Punishment, attackerId, 1);
+                else
+                    playerStats[attackerId] = (newDamage, level);
+            }
+            else
+            {
+                playerStats[attackerId] = (newDamage, level);
+            }
+
             return HookResult.Continue;
         }
 
@@ -149,62 +164,28 @@ namespace AdvancedFriendlyFire
             if (Config.EnforceDamageSources && !Config.DamageInflictors.Contains(inflictorName))
                 return HookResult.Handled;
 
-            ulong attackerId = attackerController.SteamID;
-            ulong victimId = victimController.SteamID;
-            string attackerName = attackerController.PlayerName ?? $"SteamID:{attackerId}";
-
-            playerHealth.TryGetValue(victimId, out float oldHealth);
-            float currentHealth = victimPawn.Health;
-            float hpLost = Math.Max(0, oldHealth - currentHealth);
-            playerHealth[victimId] = currentHealth;
-
             attackerController.PrintToCenterAlert("DON'T HURT YOUR TEAMMATES!");
-
-            if (!Config.PunishmentsEnabled) return HookResult.Continue;
-
-            if (!playerStats.TryGetValue(attackerId, out var stats)) stats = (0f, 0);
-
-            float newDamage = stats.Damage + hpLost;
-            int currentLevel = stats.Level;
-
-            var warnings = new[]
-            {
-                (Threshold: Config.Warning1Threshold, Message: Config.Warning1Message, Command: Config.Warning1Punishment),
-                (Threshold: Config.Warning2Threshold, Message: Config.Warning2Message, Command: Config.Warning2Punishment),
-                (Threshold: Config.Warning3Threshold, Message: Config.Warning3Message, Command: Config.Warning3Punishment)
-            };
-
-            for (int i = currentLevel; i < warnings.Length; i++)
-            {
-                if (newDamage >= warnings[i].Threshold)
-                {
-                    bool reset = (i == warnings.Length - 1);
-                    ApplyPunishment(attackerController, attackerName, warnings[i].Message, warnings[i].Command, attackerId, i + 1, reset);
-
-                    Server.PrintToChatAll($"{PREFIX}\x0A{attackerName} \x01has been punished for Friendly Fire [ {i + 1}/{warnings.Length} ].");
-                    return HookResult.Continue;
-                }
-            }
-
-            playerStats[attackerId] = (newDamage, currentLevel);
             return HookResult.Continue;
         }
 
         private void ApplyPunishment(CCSPlayerController attacker, string attackerName, string message, string command, ulong attackerId, int newLevel, bool reset = false)
         {
             attacker.PrintToChat($" {PREFIX} " + message);
+            Server.PrintToChatAll($" {PREFIX}\x0A{attackerName} \x01has been punished for Friendly Fire [ {newLevel}/3 ].");
+            Console.WriteLine($"[FriendlyFire] Applied punishment level {newLevel} to {attackerName}: {command}");
 
-            AddTimer(2.0f, () =>
-            {
+            if (reset)
+                playerStats[attackerId] = (0f, 0);
+            else
+                playerStats[attackerId] = (playerStats[attackerId].Damage, newLevel);
+
+            if (Config.PunishmentDelay > 0)
+                AddTimer(Config.PunishmentDelay, () =>
+                    Server.ExecuteCommand(command.Replace("{Player}", $"\"{attackerName}\""))
+                );
+            else
                 Server.ExecuteCommand(command.Replace("{Player}", $"\"{attackerName}\""));
-
-                if (reset)
-                    playerStats[attackerId] = (0f, 0);
-                else
-                    playerStats[attackerId] = (playerStats[attackerId].Damage, newLevel);
-
-                Console.WriteLine($"[FriendlyFire] Applied punishment level {newLevel} to {attackerName}: {command}");
-            });
         }
+
     }
 }
