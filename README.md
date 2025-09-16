@@ -1,4 +1,4 @@
-# Advanced Friendly Fire [Extracted from Argentum Suite]
+# Advanced Friendly Fire 
 - Enable damage inflictors for friendly fire
 - Revamp of [CS2 - Damage Management](https://github.com/hoan111/CS2-DamageManagement)
 
