@@ -9,10 +9,12 @@
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
     <Configurations>Debug;Release;Server</Configurations>
     <BaseOutputPath>$(OutputPath)</BaseOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.337" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.340" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
