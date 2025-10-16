@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "CounterStrikeSharp.API/1.0.340": {
+      "CounterStrikeSharp.API/1.0.342": {
         "type": "package",
         "dependencies": {
           "McMaster.NETCore.Plugins": "1.4.0",
@@ -925,23 +925,15 @@
     }
   },
   "libraries": {
-    "CounterStrikeSharp.API/1.0.340": {
-      "sha512": "d4Sl5+INHZ8l4fptY8IECFKiXd5cSKZyuLNjigZcD5HlY379jq50hSYNsqiG0tzlaCw1WAN0+4HSdS7XyULh3Q==",
+    "CounterStrikeSharp.API/1.0.342": {
+      "sha512": "HnkIxlKdohu+SU7hsH+wsvz/ihr5naaFzhG2myRitAmXCXcLHYG0l5nFfLwOWIBgFmQsGEY1ZNvhgvWeLhIteg==",
       "type": "package",
-      "path": "counterstrikesharp.api/1.0.340",
+      "path": "counterstrikesharp.api/1.0.342",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "counterstrikesharp.api.1.0.340.nupkg.sha512",
-        "counterstrikesharp.api.1.0.340.zip",
+        "counterstrikesharp.api.1.0.342.nupkg.sha512",
         "counterstrikesharp.api.nuspec",
-        "extracted/.signature.p7s",
-        "extracted/CounterStrikeSharp.API.nuspec",
-        "extracted/[Content_Types].xml",
-        "extracted/_rels/.rels",
-        "extracted/lib/net8.0/CounterStrikeSharp.API.dll",
-        "extracted/lib/net8.0/CounterStrikeSharp.API.runtimeconfig.json",
-        "extracted/lib/net8.0/CounterStrikeSharp.API.xml",
         "lib/net8.0/CounterStrikeSharp.API.dll",
         "lib/net8.0/CounterStrikeSharp.API.runtimeconfig.json",
         "lib/net8.0/CounterStrikeSharp.API.xml"
@@ -2602,7 +2594,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "CounterStrikeSharp.API >= 1.0.340",
+      "CounterStrikeSharp.API >= 1.0.342",
       "Newtonsoft.Json >= 13.0.3"
     ]
   },
@@ -2651,7 +2643,7 @@
         "dependencies": {
           "CounterStrikeSharp.API": {
             "target": "Package",
-            "version": "[1.0.340, )"
+            "version": "[1.0.342, )"
           },
           "Newtonsoft.Json": {
             "target": "Package",

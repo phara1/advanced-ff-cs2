@@ -46,7 +46,7 @@
           "dependencies": {
             "CounterStrikeSharp.API": {
               "target": "Package",
-              "version": "[1.0.340, )"
+              "version": "[1.0.342, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
