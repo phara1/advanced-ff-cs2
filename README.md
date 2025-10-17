@@ -6,9 +6,6 @@
 - If you have any ideas for this project, I'm more than happy to hear your request.
 
 ![image](https://github.com/user-attachments/assets/fbd0632d-283a-4204-a763-89bb927e4624)
-> [!WARNING]
-> Trippp is gay
-
 # Requirements
 > [CounterStrikeSharp](https://docs.cssharp.dev/) installed.
 
