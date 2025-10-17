@@ -9,11 +9,12 @@
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
     <Configurations>Debug;Release;Server</Configurations>
     <BaseOutputPath>$(OutputPath)</BaseOutputPath>
+  	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.337" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.342" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 
