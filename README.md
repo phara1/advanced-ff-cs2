@@ -2,7 +2,7 @@
 - Enable damage inflictors for friendly fire
 - Revamp of [CS2 - Damage Management](https://github.com/hoan111/CS2-DamageManagement)
 
-- If you found any bugs, please report it so I can fix it
+- If you find any bugs, please report them so I can fix them
 - If you have any ideas for this project, I'm more than happy to hear your request.
 
 ![image](https://github.com/user-attachments/assets/fbd0632d-283a-4204-a763-89bb927e4624)
